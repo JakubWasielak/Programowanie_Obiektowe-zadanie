@@ -21,7 +21,7 @@ class ClientsManagerTest {
         //when
 
         //then
-        Assertions.assertThrows(ClientNotFoundException.class,()->clientsManagerUnderTestes.getClientFromList(givenClient.getId()));
+        Assertions.assertThrows(ClientNotFoundException.class,()->clientsManagerUnderTestes.activatePremiumAccount(givenClient.getId()));
 
     }
 
@@ -34,7 +34,7 @@ class ClientsManagerTest {
         //when
 
         //then
-        Assertions.assertThrows(ClientNotFoundException.class,()->clientsManagerUnderTestes.getClientFromList(id));
+        Assertions.assertThrows(ClientNotFoundException.class,()->clientsManagerUnderTestes.activatePremiumAccount(id));
 
     }
 
@@ -48,7 +48,7 @@ class ClientsManagerTest {
         clientsManagerUnderTestes.createNewClient(givenClient.getFirstName(), givenClient.getLastName());
 
         //then
-        Assertions.assertEquals(clientsManagerUnderTestes.clientsList.getFirst(),clientsManagerUnderTestes.getClientFromList(givenClient.getId()));
+        Assertions.assertEquals(clientsManagerUnderTestes.clientsList.getFirst(),clientsManagerUnderTestes.activatePremiumAccount(givenClient.getId()));
 
     }
 

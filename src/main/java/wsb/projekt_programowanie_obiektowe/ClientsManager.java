@@ -11,7 +11,7 @@ public class ClientsManager implements Clients, Warehouse {
         this.clientsList = new ArrayList<>();
     }
 
-    Client getClientFromList(String clientId) {
+    private Client getClientFromList(String clientId) {
         if (!this.clientsList.isEmpty()) {
             for (Client client : this.clientsList) {
                 if (Objects.equals(client.getId(), clientId)) {
@@ -24,6 +24,35 @@ public class ClientsManager implements Clients, Warehouse {
         throw new ClientNotFoundException(String.format("Error: Client id: '%s' not found!", clientId));
     }
 
+    private void groupMetalIngot(HashMap<SupportedMetalType, Double> clientMetalIngotList, SupportedMetalType metalType, double mass){
+        if (clientMetalIngotList.get(metalType) + mass <= metalType.getDensity()) {
+            clientMetalIngotList.put(metalType, clientMetalIngotList.get(metalType)+mass);
+            System.out.println("Added: " + metalType + ", " + mass + "kg");
+        } else {
+            throw new FullWarehouseException("Error: Exceeded limit!");
+        }
+    }
+
+    private void addNewMetalIngot(HashMap<SupportedMetalType, Double> clientMetalIngotList, SupportedMetalType metalType, double mass){
+        if (mass <= metalType.getDensity()&& mass>0) {
+            clientMetalIngotList.put(metalType,mass);
+            System.out.println("Added new: " + metalType + ", " + mass + "kg");
+        } else {
+            throw new FullWarehouseException("Error: Exceeded limit!");
+        }
+    }
+
+    private void allowedTypeMetal(Client client, SupportedMetalType metalType, double mass){
+        if (!client.isPremiumAccount() && metalType == SupportedMetalType.GOLD) {
+            throw new ProhibitedMetalTypeException("Error: Prohibited metal type!");
+        } else {
+            addNewMetalIngot(client.getMetalIngotList(),metalType, mass);
+            System.out.println("Added new metalType: " + metalType + ", " + mass + "kg");
+        }
+    }
+
+
+
     @Override
     public String createNewClient(String firstName, String lastName) {
         this.clientsList.add(new Client(firstName, lastName));
@@ -35,12 +64,12 @@ public class ClientsManager implements Clients, Warehouse {
         if (!getClientFromList(clientId).isPremiumAccount()) {
             getClientFromList(clientId).setPremiumAccount(true);
         }
-        return "Now is a Premium Client.";
+        return getClientFromList(clientId).getFullName();
     }
 
     @Override
     public String getClientFullName(String clientId) {
-        return "Full name: " + getClientFromList(clientId).getFullName();
+        return getClientFromList(clientId).getFullName();
     }
 
     @Override
@@ -76,24 +105,12 @@ public class ClientsManager implements Clients, Warehouse {
     @Override
     public void addMetalIngot(String clientId, SupportedMetalType metalType, double mass) throws ClientNotFoundException, ProhibitedMetalTypeException, FullWarehouseException {
         if (getClientFromList(clientId).getMetalIngotList().containsKey(metalType)) {
-            if (getClientFromList(clientId).getMetalIngotList().get(metalType) + mass <= metalType.getDensity()) {
-                getClientFromList(clientId).getMetalIngotList().put(metalType, getClientFromList(clientId).getMetalIngotList().get(metalType)+mass);
-                System.out.println("Added: " + metalType + ", " + mass + "kg");
-            } else {
-                throw new FullWarehouseException("Error: Exceeded limit!");
-            }
+            groupMetalIngot(getClientFromList(clientId).getMetalIngotList(),metalType,mass);
         } else {
-            if (!getClientFromList(clientId).isPremiumAccount() && metalType == SupportedMetalType.GOLD) {
-                throw new ProhibitedMetalTypeException("Error: Prohibited metal type!");
-            } else {
-                if(metalType.getDensity()>=mass){
-                    getClientFromList(clientId).getMetalIngotList().put(metalType, mass);
-                    System.out.println("Added new metalType: " + metalType + ", " + mass + "kg");
-                }else{
-                    throw new FullWarehouseException("Error: Exceeded limit!");
-                }
-            }
+            System.out.println("nie");
+            allowedTypeMetal(getClientFromList(clientId),metalType, mass);
         }
+        System.out.println(getClientFromList(clientId).getMetalIngotList());
     }
 
     @Override
